@@ -1,0 +1,135 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>OrgChart Import CSV | BALKANGraph</title>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/BALKANGraph.js"></script>
+    <style type="text/css">
+        html, body {
+            margin: 0px;
+            padding: 0px;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            text-align: center;
+            font-family: Roboto,Roboto-Regular,Helvetica;
+        }
+
+        #tree {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="tree"></div>
+
+
+    <script>
+        var chart;
+        var upload = function () {
+            var fileUpload = document.createElement("INPUT");
+            fileUpload.setAttribute("type", "file");
+            fileUpload.style.display = "none";
+            fileUpload.onchange = function () {
+                var formData = new FormData();
+                var totalFiles = this.files.length;
+                for (var i = 0; i < totalFiles; i++) {
+                    var file = this.files[i];
+                    formData.append("FileUpload", file);
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '/Home/Write',
+                    data: formData,
+                    dataType: 'json',
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        var result = convertToNodesAndLinks(data);
+                        chart.config.nodes = result.nodes;
+                        chart.config.links = result.links;
+                        chart.draw(false, BALKANGraph.action.update);
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            };
+            document.body.appendChild(fileUpload);
+            fileUpload.click();
+        };
+
+        function convertToNodesAndLinks(data) {
+            data = JSON.parse(data);
+            var nodes = [];
+            var links = [];
+            for (var i = 1; i < data.length; i++) {
+                var node = {};
+                var link = {};
+                for (var j = 0; j < data[i].length; j++) {
+                    if (data[0][j] === "reportsTo") {
+                        link.to = data[i][j];
+                    }
+                    else if (data[0][j] === "id") {
+                        link.from = data[i][j];
+                        node[data[0][j]] = data[i][j];
+                    }
+                    else {
+                        node[data[0][j]] = data[i][j];
+                    }
+                }
+                links.push(link);
+                nodes.push(node);
+            }
+
+            return { nodes: nodes, links: links };
+        }
+
+        function init(links, nodes) {
+            chart = new OrgChart(document.getElementById("tree"), {
+                showYScroll: BALKANGraph.scroll.visible,
+                enableSearch: false,
+                nodeBinding: {
+                    field_0: "name"
+                },
+                menu: {
+                    csv: {
+                        text: "Export CSV"
+                    },
+                    importCSV: {
+                        text: "Import CSV",
+                        onClick: upload,
+                        icon: BALKANGraph.icon.csv(24, 24, "#7A7A7A")
+                    }
+                },
+                links: links,
+                nodes: nodes
+            });
+        }
+
+        $.ajax({
+            type: "GET",
+            url: '/Home/Read',
+            dataType: 'json',
+            success: function (data) {
+                var result = convertToNodesAndLinks(data);
+                init(result.links, result.nodes);
+            },
+            error: function (error) {
+                alert("errror");
+            }
+        });
+
+    </script>
+</body>
+</html>
