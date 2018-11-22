@@ -11,7 +11,7 @@
     <title>OrgChart Import CSV | BALKANGraph</title>
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script src="~/Scripts/BALKANGraph.js"></script>
+    <script src="https://balkangraph.com/js/latest/orgchart.js"></script>
     <style type="text/css">
         html, body {
             margin: 0px;
@@ -57,8 +57,7 @@
                     success: function (data) {
                         var result = convertToNodesAndLinks(data);
                         chart.config.nodes = result.nodes;
-                        chart.config.links = result.links;
-                        chart.draw(false, BALKANGraph.action.update);
+                        chart.draw(BALKANGraph.action.update);
                     },
                     error: function (error) {
                         alert(error);
@@ -72,33 +71,21 @@
         function convertToNodesAndLinks(data) {
             data = JSON.parse(data);
             var nodes = [];
-            var links = [];
             for (var i = 1; i < data.length; i++) {
                 var node = {};
-                var link = {};
                 for (var j = 0; j < data[i].length; j++) {
-                    if (data[0][j] === "reportsTo") {
-                        link.to = data[i][j];
-                    }
-                    else if (data[0][j] === "id") {
-                        link.from = data[i][j];
-                        node[data[0][j]] = data[i][j];
-                    }
-                    else {
-                        node[data[0][j]] = data[i][j];
-                    }
+                    node[data[0][j]] = data[i][j];
                 }
-                links.push(link);
                 nodes.push(node);
             }
 
-            return { nodes: nodes, links: links };
+            return { nodes: nodes };
         }
 
         function init(links, nodes) {
             chart = new OrgChart(document.getElementById("tree"), {
-                showYScroll: BALKANGraph.scroll.visible,
-                enableSearch: false,
+                enableDragDrop: true,
+                nodeMouseClickBehaviour: BALKANGraph.action.edit,
                 nodeBinding: {
                     field_0: "name"
                 },
