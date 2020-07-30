@@ -8,7 +8,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
-    <title>OrgChart Import CSV | BALKANGraph</title>
+    <title>OrgChart Import CSV | OrgChart</title>
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://balkangraph.com/js/latest/orgchart.js"></script>
@@ -57,7 +57,7 @@
                     success: function (data) {
                         var result = convertToNodesAndLinks(data);
                         chart.config.nodes = result.nodes;
-                        chart.draw(BALKANGraph.action.update);
+                        chart.draw(OrgChart.action.update);
                     },
                     error: function (error) {
                         alert(error);
@@ -85,7 +85,7 @@
         function init(links, nodes) {
             chart = new OrgChart(document.getElementById("tree"), {
                 enableDragDrop: true,
-                nodeMouseClickBehaviour: BALKANGraph.action.edit,
+                nodeMouseClickBehaviour: OrgChart.action.edit,
                 nodeBinding: {
                     field_0: "name"
                 },
@@ -96,7 +96,7 @@
                     importCSV: {
                         text: "Import CSV",
                         onClick: upload,
-                        icon: BALKANGraph.icon.csv(24, 24, "#7A7A7A")
+                        icon: OrgChart.icon.csv(24, 24, "#7A7A7A")
                     }
                 },
                 links: links,
